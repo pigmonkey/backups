@@ -12,3 +12,6 @@ Scripts that I wrote to perform various backup tasks
     not control the destination server. Thus, the backups must be encrypted.
     I use GPG's symmetric encryption for this. It gets the job done and is
     simpler than asymmetric encryption with keys.
+
+- clean.sh
+    Simple bash script to delete backups older than 60 days.
