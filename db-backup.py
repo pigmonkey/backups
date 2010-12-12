@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 #
-# A simply python scrip to backup databases.
+# A simple python script to backup databases.
 #
 # Backups are stored in the given directory. A GPG symmetrically encrypted
 # tar of the backup and a hash of the backup are emailed to the given
