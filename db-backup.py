@@ -308,8 +308,8 @@ if MAIL:
 
     # Encrypt the compressed file
     try:
-        p = subprocess.check_call([GPG, '-cao', crypt_file,'--passphrase',
-            KEY, tar_file])
+        p = subprocess.check_call([GPG, '--batch', '-cao', crypt_file,
+                                  '--passphrase', KEY, tar_file])
     except OSError:
         print '\tCould not find %s' % (GPG)
         print '\tEmail failed'
