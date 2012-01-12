@@ -31,4 +31,4 @@ Nothing fancy here.
 clean.sh
 --------
 
-Simple bash script to delete backups older than 60 days.
+A simple Bash script to remove files older than a given age.
