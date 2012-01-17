@@ -4,6 +4,24 @@ Backups
 These are scripts written to perform various backup-related tasks.
 
 
+tarsnapper.py
+------------
+
+A Python script to manage [Tarsnap](https://www.tarsnap.com/) archives.
+
+Tarsnapper will use `tarsnap` to backup any specified files or directories. It
+can create one archive or many. The archive is named by the user, and can have
+an optional suffix (such as the current date) automatically added to the name.
+
+That's dandy, but the real reason that Tarsnapper exists is to delete old
+archives. Give it a maximum age, such as 7d (7 days) or 8w (8 weeks), and any
+archives older than that age will be deleted.
+
+Save your picodollars! Don't waste disk-space.
+
+See source for configuration.
+
+
 db-backup.py
 ------------
 
