@@ -13,6 +13,8 @@
 #
 # Save your picodollars! Don't waste disk-space.
 #
+# Requires Python 2.7 or greater.
+#
 # Author:   Pig Monkey (pm@pig-monkey.com)
 # Website:  https://github.com/pigmonkey/backups
 #
