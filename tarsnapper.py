@@ -129,8 +129,12 @@ def execute(binary, arguments):
 
 
 def create_archive(archive_name, item):
-    """Create a new Tarsnap archive of an item.."""
-    return execute(TARSNAP, ['-c', '-f', archive_name, item])
+    """Create a new Tarsnap archive of an item, or items."""
+    arguments = ['-c', '-f', archive_name]
+    # If the archive is to include multiple files or directories, split them
+    # out so that they are sent as different items in the list.
+    arguments.extend(item.strip().split(' '))
+    return execute(TARSNAP, arguments)
 
 
 def delete_archive(archive_name):
