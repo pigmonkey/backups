@@ -4,6 +4,32 @@ Backups
 These are scripts written to perform various backup-related tasks.
 
 
+backitup.sh
+-----------
+
+Perform a backup if a certain amount of time has passed.
+
+This script performs a backup of a user-specified directory using a
+user-specified backup command. If the backup command exits successfully (with
+an exit code of zero) the current timestamp is saved in a file. Every time
+the script runs, it checks the timestamp stored in the file. If the timestamp
+is greater than a user-specified period, the backup command is executed.
+
+I want to perform daily, remote backups on a laptop. I only want the backup
+to attempt to execute if I am logged in and online, so I don't want to run it
+as a normal cron job. Further, the backup is of a filesystem. I only want the
+backup to execute if the filesystem is mounted.
+
+The idea is that this script could be called every time you login. Even if
+you login numerous times per day, backups will only be executed once per day
+(assuming that the period you specified was one day). If you use a network
+manager, such as wicd, you could have this script execute every time you
+connect to a network. Again, backups will only be executed once per period,
+even if you connect to the network more frequently.
+
+See source for configuration.
+
+
 tarsnapper.py
 ------------
 
