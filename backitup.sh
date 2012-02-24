@@ -48,11 +48,15 @@ BACKUP="$HOME/bin/tarsnapper.py"
 # file does not exist, simply set this to a blank string.
 NOFILE="touch $LASTRUN"
 
-# Define the period, in seconds, for backups to be executed.
+# Define the period, in seconds, for backups to attempt to execute.
 # Hourly:   3600
 # Daily:    86400
 # Weekly:   604800
-PERIOD=86400
+# The period may also be set to the string 'DAILY'. If this is set, backups
+# will attempt to execute once per calendar day. Note that this behaviour is
+# different than setting the period to 86400, which results in attempts once
+# every 24-hour period.
+PERIOD='DAILY'
 
 # End configuration here.
 ###############################################################################
@@ -64,12 +68,19 @@ backup() {
     # If the backup was succesful, store the current time.
     if [ $? -eq 0 ]; then
         echo 'Backup completed.'
-        date '+%s' > "$LASTRUN"
+        date $timeformat > "$LASTRUN"
     else
         echo 'Backup failed.'
     fi
     exit
 }
+
+# Set the format of the time string to store.
+if [ $PERIOD == 'DAILY' ]; then
+    timeformat='+%Y%m%d'
+else
+    timeformat='+%s'
+fi
 
 # If the file does not exist, perform the user requested action. If no action
 # was specified, exit.
@@ -84,15 +95,28 @@ fi
 # If the file exists and is not empty, get the timestamp contained within it.
 if [ -s "$LASTRUN" ]; then
     timestamp=$(eval cat \$LASTRUN)
-    # If the difference between the current time and the timestamp is
-    # greater than the defined period, execute the backup.
-    diff=$(( `date '+%s'` - $timestamp))
 
-    if [ "$diff" -gt "$PERIOD" ]; then
-        backup
+    # If the backup period is daily, perform the backup if the stored timestamp
+    # is not equal to the current calendar day.
+    if [ $PERIOD == 'DAILY' ]; then
+        if [ $timestamp != `date $timeformat` ]; then
+            backup
+        else
+            echo "Already backed up today. Exiting."
+            exit
+        fi
+
+    # If the backup period is not daily, perform the backup if the difference
+    # between the stored timestamp and the current time is greater than the
+    # defined period.
     else
-        echo "Backed up less than $PERIOD seconds ago. Exiting"
-        exit
+        diff=$(( `date $timeformat` - $timestamp))
+        if [ "$diff" -gt "$PERIOD" ]; then
+            backup
+        else
+            echo "Backed up less than $PERIOD seconds ago. Exiting."
+            exit
+        fi
     fi
 fi
 
