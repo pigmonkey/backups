@@ -49,25 +49,25 @@ RSNAPSHOT="/usr/bin/rsnapshot"
 # Exit if no volume is specified.
 if [ "$UUID" = "" ]; then
     echo 'No volume specified.'
-    exit
+    exit 78
 fi
 
 # Exit if no key file is specified.
 if [ "$KEYFILE" = "" ]; then
     echo 'No key file specified.'
-    exit
+    exit 78
 fi
 
 # Exit if no mount point is specified.
 if [ "$MOUNTPOINT" = "" ]; then
     echo 'No mount point specified.'
-    exit
+    exit 78
 fi
 
 # Exit if no interval was specified.
 if [ "$1" = "" ]; then
     echo "No interval specified."
-    exit
+    exit 64
 fi
 
 # If the mount point does not exist, create it.
@@ -76,7 +76,7 @@ if [ ! -d "$MOUNTPOINT" ]; then
     # Exit if the mount point was not created.
     if [ $? -ne 0 ]; then
         echo "Failed to create mount point."
-        exit
+        exit 73
     fi
 fi
 
@@ -85,6 +85,9 @@ volume="/dev/disk/by-uuid/$UUID"
 
 # Create a unique name for the LUKS mapping.
 name="crypt-$UUID"
+
+# Set the default exit code to 0.
+exitcode=0
 
 # Continue if the volume exists.
 if [ -e $volume ];
@@ -107,13 +110,18 @@ then
                 rmdir $MOUNTPOINT
             fi
         else
+            exitcode=$?
             echo "Failed to mount $volume at $MOUNTPOINT."
         fi
         # Close the LUKS volume.
         cryptsetup luksClose $name
     else
+        exitcode=$?
         echo "Failed to open $volume with key $KEYFILE."
     fi
 else
+    exitcode=33
     echo "Volume $UUID not found."
 fi
+
+exit $exitcode
