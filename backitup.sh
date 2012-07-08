@@ -61,8 +61,8 @@ PERIOD='DAILY'
 # End configuration here.
 ###############################################################################
 
-# Get the current time.
 backup() {
+    # Execute the backup.
     echo 'Executing backup...'
     $BACKUP
     # If the backup was succesful, store the current time.
