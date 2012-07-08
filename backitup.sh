@@ -52,10 +52,9 @@ NOFILE="touch $LASTRUN"
 # Hourly:   3600
 # Daily:    86400
 # Weekly:   604800
-# The period may also be set to the string 'DAILY'. If this is set, backups
-# will attempt to execute once per calendar day. Note that this behaviour is
-# different than setting the period to 86400, which results in attempts once
-# every 24-hour period.
+# The period may also be set to the string 'DAILY', 'WEEKLY' or 'MONTHLY'.
+# Note that this will result in behaviour that is different from setting the
+# period to the equivalent seconds.
 PERIOD='DAILY'
 
 # End configuration here.
@@ -78,6 +77,10 @@ backup() {
 # Set the format of the time string to store.
 if [ $PERIOD == 'DAILY' ]; then
     timeformat='+%Y%m%d'
+elif [ $PERIOD == 'WEEKLY' ]; then
+    timeformat='+%G-W%W'
+elif [ $PERIOD == 'MONTHLY' ]; then
+    timeformat='+%Y%m'
 else
     timeformat='+%s'
 fi
@@ -96,13 +99,13 @@ fi
 if [ -s "$LASTRUN" ]; then
     timestamp=$(eval cat \$LASTRUN)
 
-    # If the backup period is daily, perform the backup if the stored timestamp
-    # is not equal to the current calendar day.
-    if [ $PERIOD == 'DAILY' ]; then
+    # If the backup period is daily, weekly or monthly, perform the backup if
+    # the stored timestamp is not equal to the current date in the same format.
+    if [ $PERIOD == 'DAILY' -o $PERIOD == 'WEEKLY' -o $PERIOD == 'MONTHLY' ]; then
         if [ $timestamp != `date $timeformat` ]; then
             backup
         else
-            echo "Already backed up today. Exiting."
+            echo "Already backed up once for period $PERIOD. Exiting."
             exit
         fi
 
