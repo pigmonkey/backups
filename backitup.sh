@@ -29,12 +29,9 @@
 #
 ###############################################################################
 
-# Define the directory to be backed up.
-DIRECTORY="$HOME/work"
-
 # Define the file that will hold the timestamp of the last successful backup.
 # It is recommended that this file be *inside* the directory to be backed up.
-LASTRUN="$DIRECTORY/.lastrun"
+LASTRUN="$HOME/documents/.lastrun"
 
 # Define the backup command.
 BACKUP="$HOME/bin/tarsnapper.py"
