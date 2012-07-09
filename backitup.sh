@@ -57,6 +57,18 @@ PERIOD='DAILY'
 # End configuration here.
 ###############################################################################
 
+usage() {
+    echo "Usage: backitup.sh [OPTION...]
+Note that any command line arguments overwrite variables defined in the source.
+
+Options:
+    -p      the period for which backups should attempt to be executed
+            (integer seconds or 'DAILY', 'WEEKLY' or 'MONTHLY')
+    -b      the backup command to execute; note that this should be quoted if it contains a space
+    -l      the location of the file that holds the timestamp of the last successful backup.
+    -n      the command to be executed if the above file does not exist"
+}
+
 backup() {
     # Execute the backup.
     echo 'Executing backup...'
@@ -70,6 +82,34 @@ backup() {
     fi
     exit
 }
+
+# Get any arguments.
+while getopts ":p:b:l:n:h" opt; do
+    case $opt in
+        p)
+            PERIOD=$OPTARG
+            ;;
+        b)
+            BACKUP=$OPTARG
+            ;;
+        l)
+            LASTRUN=$OPTARG
+            ;;
+        n)
+            NOFILE=$OPTARG
+            ;;
+        h)
+            usage
+            exit
+            ;;
+        :)
+            echo "Option -$OPTARG requires an argument.
+            "
+            usage
+            exit
+            ;;
+    esac
+done
 
 # Set the format of the time string to store.
 if [ $PERIOD == 'DAILY' ]; then
