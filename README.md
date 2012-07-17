@@ -77,6 +77,13 @@ Save your picodollars! Don't waste disk-space.
 
 See source for configuration.
 
+### tarsnapper.conf.sample
+
+An example configuration file for `tarsnapper.py`
+
+Tarsnapper may be configured with a file. This should be installed at
+`~/.tarsnapper.conf`. All entries are optional (as is the file itself).
+
 
 db-backup.py
 ------------

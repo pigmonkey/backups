@@ -1,0 +1,21 @@
+# This file may be used to configure Tarsnapper. It should be isntalled at
+# ~/.tarsnapper.conf. All entries are optional (as is the fil itself).
+
+# Define the Tarsnapper settings.
+[Settings]
+# Set the location of tarsnap.
+tarsnap: /usr/bin/tarsnap
+# Set the maximum age that an archive is allowed to reach before deletion.
+maximum_age: 4w
+# Check if read permission has been granted on the items to be archived before
+# beginning the archive process
+permission_check: True
+# Specify whether a timestamp suffix should be added to the archive name.
+suffix: True
+
+# Define the archive(s) to be created.
+[Archives]
+# Each archive should be in the format:
+#   archive_name: /first/directory /second/directory
+home: /home
+logs: /var/logs /srv/mywebsite.com/logs

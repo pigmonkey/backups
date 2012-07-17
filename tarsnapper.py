@@ -13,6 +13,10 @@
 #
 # Save your picodollars! Don't waste disk-space.
 #
+# Configuration may be completed by editing the variables below, or by creating
+# a config file at ~/.tarsnapper.conf. A sample configuration file should have
+# been included with this distribution.
+#
 # Requires Python 2.7 or greater.
 #
 # Author:   Pig Monkey (pm@pig-monkey.com)
@@ -26,6 +30,7 @@ import datetime
 import os
 import subprocess
 import sys
+import ConfigParser
 
 # Set the location of the Tarsnap binary.
 TARSNAP = '/usr/local/bin/tarsnap'
@@ -153,6 +158,26 @@ def list_archives():
 
     return False
 
+
+# Read the user's configuration file.
+config = ConfigParser.RawConfigParser()
+config.read(os.path.expanduser('~/.tarsnapper.conf'))
+# Get any settings defined in the config file.
+if config.has_section('Settings'):
+    if config.has_option('Settings', 'tarsnap'):
+        TARSNAP = config.get('Settings', 'tarsnap')
+    if config.has_option('Settings', 'maximum_age'):
+        MAXIMUM_AGE = config.get('Settings', 'maximum_age')
+    if config.has_option('Settings', 'permission_check'):
+        PERMISSION_CHECK = config.getboolean('Settings', 'permission_check')
+    if config.has_option('Settings', 'suffix'):
+        if config.getboolean('Settings', 'suffix') is False:
+            SUFFIX = False
+# Get any archives defined in the config file.
+if config.has_section('Archives'):
+    BACKUPS = []
+    for name in config.options('Archives'):
+        BACKUPS.append((name, config.get('Archives', name)))
 
 # Perform the backups.
 for backup in BACKUPS:
