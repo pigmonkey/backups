@@ -101,14 +101,6 @@ I use GPG's symmetric encryption for this. It gets the job done and is
 simpler than asymmetric encryption with keys.
 
 
-file-backup.sh
---------------
-
-Backup files in a directory! See source for configuration.
-
-Nothing fancy here.
-
-
 clean.sh
 --------
 
