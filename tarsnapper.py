@@ -137,9 +137,12 @@ def create_archive(archive_name, item):
     return execute(TARSNAP, arguments)
 
 
-def delete_archive(archive_name):
-    """Delete a Tarsnap archive of the given name."""
-    return execute(TARSNAP, ['--no-print-stats', '-d', '-f', archive_name])
+def delete_archives(archive_list):
+    """Delete a list of tarsnap archives."""
+    args = ['--no-print-stats', '-d']
+    for archive in archive_list:
+        args.extend(['-f', archive])
+    return execute(TARSNAP, args)
 
 
 def list_archives():
@@ -173,11 +176,17 @@ for backup in BACKUPS:
 if MAXIMUM_AGE:
     now = datetime.datetime.now()
     maximum_timedelta = convert_to_timedelta(MAXIMUM_AGE)
+    # Create an empty list to hold the aged archives.
+    aged = []
+    # For each archive, if the difference between the current date and the
+    # archive date is greater than the maximum allowed age, add it to the list
+    # of archives to be deleted.
     for archive in list_archives():
         archive = archive.strip().partition('\t')
         name =  archive[0]
         date = datetime.datetime.strptime(archive[-1], '%Y-%m-%d %H:%M:%S')
-        # Check if the difference between the current date and the archive date
-        # is greater than the maximum allowed age.
         if (now - date) > maximum_timedelta:
-            delete_archive(name)
+            aged.append(name)
+    # Delete any aged archives.
+    if aged:
+        delete_archives(aged)
