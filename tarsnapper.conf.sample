@@ -12,6 +12,8 @@ maximum_age: 4w
 permission_check: True
 # Specify whether a timestamp suffix should be added to the archive name.
 suffix: True
+# Specify a key to be used only when deleting archives.
+delete_key: /home/user/.tarsnap.del.key
 
 # Define the archive(s) to be created.
 [Archives]

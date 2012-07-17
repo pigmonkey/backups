@@ -62,6 +62,12 @@ MAXIMUM_AGE = '4w'
 # not check _inside_ any of the given directories.
 PERMISSION_CHECK = True
 
+# Specify a Tarsnap key-file to be used when deleting archives. This is useful
+# if you have a read/write key specified in your tarsnap.conf file as the
+# default key to be used when creating archives, but you have a separate
+# delete-only key that should be used when deleting archives.
+#DELETE_KEY = os.path.expanduser('~/.tarsnap.del.key')
+
 # End configuration here.
 ###############################################################################
 
@@ -145,6 +151,8 @@ def create_archive(archive_name, item):
 def delete_archives(archive_list):
     """Delete a list of tarsnap archives."""
     args = ['--no-print-stats', '-d']
+    if DELETE_KEY:
+        args.extend(['--keyfile', DELETE_KEY])
     for archive in archive_list:
         args.extend(['-f', archive])
     return execute(TARSNAP, args)
@@ -173,6 +181,8 @@ if config.has_section('Settings'):
     if config.has_option('Settings', 'suffix'):
         if config.getboolean('Settings', 'suffix') is False:
             SUFFIX = False
+    if config.has_option('Settings', 'delete_key'):
+        DELETE_KEY = config.get('Settings', 'delete_key')
 # Get any archives defined in the config file.
 if config.has_section('Archives'):
     BACKUPS = []
