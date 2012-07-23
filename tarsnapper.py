@@ -67,6 +67,7 @@ PERMISSION_CHECK = True
 # default key to be used when creating archives, but you have a separate
 # delete-only key that should be used when deleting archives.
 #DELETE_KEY = os.path.expanduser('~/.tarsnap.del.key')
+DELETE_KEY = ''
 
 # End configuration here.
 ###############################################################################
