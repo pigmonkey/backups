@@ -31,16 +31,24 @@ import os
 import subprocess
 import sys
 import ConfigParser
+import argparse
+
+# Set the location of the config file. This file is optional. If used, it
+# will overwrite the options below. The file should be in the INI-style format
+# parsable by the ConfigParser module. If the specified file does not exist,
+# Tarsnapper will simply continue. Note that the os module is available.
+CONFIG = os.path.expanduser('~/.tarsnapper.conf')
 
 # Set the location of the Tarsnap binary.
 TARSNAP = '/usr/local/bin/tarsnap'
 
-# Specify a list of files or directories to be backed up, and the base name of
-# the archive. Multiple files or directories may be contained within a single
-# archive. Each entry in the list should be a tuple, such as:
-#     BACKUPS = [('home', '/home'),
-#                ('logs', '/var/logs /srv/mywebsite.com/logs')]
-BACKUPS = [('home', '/home')]
+# Specify a dictionary of archives. The key should be the base name of the
+# archive. The value should be a string of the files or directories that the
+# archive should contain. Multiple files or directories may be contained within
+# a single string value. For example:
+#     BACKUPS = {'home': '/home',
+#                'logs': '/var/logs /srv/mywebsite.com/logs'}
+BACKUPS = {'home': '/home'}
 
 # Specify a suffix to append to each archive name. This can be anything
 # (or nothing), but each archive name must be unique, so you probably want to
@@ -140,6 +148,28 @@ def execute(binary, arguments):
     return False
 
 
+def prepare_archive(archive, contents):
+    """
+    Prepare an archive by building the archive name and checking permissions,
+    if requested. Return the full name of the archive.
+    """
+    # Check the permissions.
+    if PERMISSION_CHECK:
+        for item in contents.strip().split():
+            # If the permission check fails, return false.
+            if os.access(item, os.R_OK) is False:
+                permissions = False
+                return False
+
+    # Build the archive name by adding the suffix to the base.
+    if SUFFIX:
+        archive_name = '%s.%s' % (archive, SUFFIX)
+    else:
+        archive_name = archive
+
+    return archive_name
+
+
 def create_archive(archive_name, item):
     """Create a new Tarsnap archive of an item, or items."""
     arguments = ['-c', '-f', archive_name]
@@ -167,10 +197,23 @@ def list_archives():
 
     return False
 
+# Set available command-line arguments.
+parser = argparse.ArgumentParser(description='A Python script to manage \
+                                              Tarsnap archives.')
+parser.add_argument('-c', '--config', action='store', dest='config',
+                    help='Specify the configuration file to use.')
+parser.add_argument('-a', '--archive', action='store', dest='archive',
+                    help='Specify a named archive to execute.')
+parser.add_argument('-r', '--remove', action='store_const', const=True,
+                    help='Remove archives old archives and exit.')
+# Parse command-line arguments.
+args = parser.parse_args()
 
 # Read the user's configuration file.
 config = ConfigParser.RawConfigParser()
-config.read(os.path.expanduser('~/.tarsnapper.conf'))
+if args.config:
+    CONFIG = args.config
+config.read(CONFIG)
 # Get any settings defined in the config file.
 if config.has_section('Settings'):
     if config.has_option('Settings', 'tarsnap'):
@@ -186,27 +229,27 @@ if config.has_section('Settings'):
         DELETE_KEY = config.get('Settings', 'delete_key')
 # Get any archives defined in the config file.
 if config.has_section('Archives'):
-    BACKUPS = []
+    BACKUPS = {}
     for name in config.options('Archives'):
-        BACKUPS.append((name, config.get('Archives', name)))
+        BACKUPS[name] = config.get('Archives', name)
 
-# Perform the backups.
-for backup in BACKUPS:
-    # Initially assume that the user has the proper permissions to perform the
-    # backup, or that the user does not care to check.
-    permissions = True
-    # Check the permissions, if requested.
-    if PERMISSION_CHECK:
-        for item in backup[1].strip().split():
-            if os.access(item, os.R_OK) is False:
-                permissions = False
-                break
-    if permissions:
-        if SUFFIX:
-            archive_name = '%s.%s' % (backup[0], SUFFIX)
+# If the user did not request deletion only, perform the backups.
+if not args.remove:
+    # If the user specified a single archive, only execute that one.
+    if args.archive:
+        try:
+            archive_name = prepare_archive(args.archive, BACKUPS[args.archive])
+        except KeyError:
+            print 'Archive %s is not configured.' % args.archive
+            sys.exit(2)
         else:
-            archive_name = backup[0]
-        create_archive(archive_name, backup[1])
+            create_archive(archive_name, BACKUPS[args.archive])
+    # If the user did not specify a single archive, execute all of them.
+    else:
+        for archive, contents in BACKUPS.items():
+            archive_name = prepare_archive(archive, contents)
+            if archive_name:
+                create_archive(archive_name, contents)
 
 # Look for any old backups to delete, if requested.
 if MAXIMUM_AGE:
@@ -217,12 +260,14 @@ if MAXIMUM_AGE:
     # For each archive, if the difference between the current date and the
     # archive date is greater than the maximum allowed age, add it to the list
     # of archives to be deleted.
-    for archive in list_archives():
-        archive = archive.strip().partition('\t')
-        name =  archive[0]
-        date = datetime.datetime.strptime(archive[-1], '%Y-%m-%d %H:%M:%S')
-        if (now - date) > maximum_timedelta:
-            aged.append(name)
+    archives = list_archives()
+    if archives:
+        for archive in archives:
+            archive = archive.strip().partition('\t')
+            name =  archive[0]
+            date = datetime.datetime.strptime(archive[-1], '%Y-%m-%d %H:%M:%S')
+            if (now - date) > maximum_timedelta:
+                aged.append(name)
     # Delete any aged archives.
     if aged:
         delete_archives(aged)
